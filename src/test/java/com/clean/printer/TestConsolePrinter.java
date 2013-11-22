@@ -1,5 +1,7 @@
 package com.clean.printer;
 
+import org.junit.Before;
+
 import com.clean.ship.ShipLocations;
 
 public class TestConsolePrinter {
