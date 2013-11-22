@@ -2,11 +2,11 @@ package com.clean.main;
 
 import com.clean.communication.TorpedoClient;
 import com.clean.communication.TorpedoServer;
-import com.clean.interfaces.GameStrategy;
 import com.clean.ship.ShipFileReader;
 import com.clean.ship.ShipLocations;
 import com.clean.shipgame.GameWithShips;
 import com.clean.strategy.FirePositionStrategy;
+import com.clean.strategy.XYGuessGenerator;
 import com.clean.tablewithships.ShipImplementation;
 
 
@@ -28,7 +28,9 @@ public class App
     	if(args[1].contains(":")){
             TorpedoClient torpedoClient = new TorpedoClient(args[1]);
             game.setBoardSize(Integer.parseInt(args[2]));
-            GameStrategy gameStrategy = new FirePositionStrategy(Integer.parseInt(args[2]));
+            FirePositionStrategy gameStrategy = new FirePositionStrategy();
+            XYGuessGenerator generator = new XYGuessGenerator(Integer.parseInt(args[2]));
+            gameStrategy.setGenerator(generator);
             gameStrategy.initialise();
             torpedoClient.initClient(game, gameStrategy, args[2]);
     	} else {

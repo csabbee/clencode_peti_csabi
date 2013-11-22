@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 
 import com.clean.communication.TorpedoProtocol;
 import com.clean.interfaces.GameStrategy;
+import com.clean.shipgame.Status;
 
 public class MessageHandler {
 
@@ -13,7 +14,7 @@ public class MessageHandler {
     BufferedReader in;
     GameStrategy gameStrategy;
     TorpedoProtocol torpedoProtocol;
-    
+
     public MessageHandler(PrintWriter out, BufferedReader in, GameStrategy gameStrategy, TorpedoProtocol torpedoProtocol) {
         super();
         this.out = out;
@@ -21,7 +22,7 @@ public class MessageHandler {
         this.gameStrategy = gameStrategy;
         this.torpedoProtocol = torpedoProtocol;
     }
-    
+
     public void run() {
         try {
             processMessages();
@@ -29,7 +30,7 @@ public class MessageHandler {
             e.printStackTrace();
         }
     }
-    
+
     private void processMessages() throws IOException {
         String inputLine;
         String outputLine;
@@ -43,17 +44,37 @@ public class MessageHandler {
                 outputLine = torpedoProtocol.processInput(inputLine);
                 if(inputLine.toLowerCase().contains("fire")){
                     out.println(outputLine);
-                    out.println(gameStrategy.nextTarget(inputLine));
                 } else if(outputLine.equals("win")){
                     out.println(outputLine);
                     System.out.format("Defeat!%n");
                     break;
+                } else if(isResponsToFire(inputLine)){
+                    Status inputStatus = convert(inputLine);
+                    out.println(gameStrategy.getTarget(inputStatus));
                 }
 
             }
         }
     }
-    
+
+    private Status convert(String inputLine) {
+        Status answer;
+        if(inputLine.toLowerCase().equals("hit")){
+            answer = Status.HIT;
+        } else if(inputLine.toLowerCase().equals("miss")){
+            answer = Status.MISS;
+        } else {
+            answer = Status.SUNK;
+        }
+        
+        return answer;
+    }
+
+    private boolean isResponsToFire(String inputLine) {
+        return inputLine.toLowerCase().contains("hit") ||
+                inputLine.toLowerCase().contains("miss") || inputLine.toLowerCase().contains("sunk");
+    }
+
     private boolean isValidProtocolMessage(String inputLine) {
         return inputLine.toLowerCase().contains("fire") || inputLine.toLowerCase().contains("hit") ||
                 inputLine.toLowerCase().contains("miss") || inputLine.toLowerCase().contains("sunk");

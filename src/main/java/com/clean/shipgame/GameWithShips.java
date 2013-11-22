@@ -1,6 +1,7 @@
 package com.clean.shipgame;
 
 import com.clean.interfaces.Torpedo;
+import com.clean.printer.ConsolePrinter;
 import com.clean.ship.ShipFileReader;
 import com.clean.ship.ShipLocations;
 import com.clean.tablewithships.ShipImplementation;

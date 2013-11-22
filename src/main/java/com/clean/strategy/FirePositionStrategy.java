@@ -1,206 +1,136 @@
 package com.clean.strategy;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.clean.interfaces.GameStrategy;
+import com.clean.ship.Point;
+import com.clean.shipgame.Status;
 
 public class FirePositionStrategy implements GameStrategy {
-	
-	public FirePositionStrategy(int boardSize) {
-		super();
-		this.boardSize = boardSize;
-		board = new boolean[boardSize][boardSize];
 		
-	}
-	
-	private boolean[][] board;
-
-	private int boardSize;
-	private int[] guessx;
-	private int[] guessy;
-	private int counter;
-	private List<Integer> hits = new ArrayList<>();
+	private List<Point> guesses;
+	private XYGuessGenerator generator;
+	private List<Point> hits = new ArrayList<>();
 	private int peter = 0;
-/*	private int tempx = -1;
-	private int tempy = -1;
-
-	private boolean tempcheck = false;*/
-	
-	private String converter(int x, int y) {
-		return "fire " + String.valueOf(x) + " " +String.valueOf(y);
-	}
-	
-	private boolean checkguesses(int x, int y) {
-		return (x < 0 || y < 0 || x >= boardSize || y >= boardSize) ? false : true;
-	}
-	
-	public void print () {
-		for (int i = 0; i < board.length; i++) {
-			for (int j = 0; j < board[i].length; j++) {
-				System.out.format("%d, %d=%s %n", i, j, board[i][j]);
-			}
-		}
-	}
-	
-	private void storeguesses(int x, int y) {
-		if (checkguesses(x, y) && (counter < (boardSize * boardSize))) {
-			guessx[counter] = x;
-			guessy[counter] = y;
-			counter++;
-		}
-	}
-	
-	private void makerandomguesses(int shift) {
-		int middle = (boardSize-1) /2;
-		int x;
-		int y;
-		for (int layer = 0; layer < middle+3; layer++) {
-			for (int topsteps = 0; topsteps < layer+1; topsteps++) {
-				x = middle - layer + topsteps*2 + shift;
-				y = middle + layer;
-				storeguesses(x,y);
-			}
-			for (int bottomsteps = 0; bottomsteps < layer+1; bottomsteps++) { 
-				if (layer == 0) {
-					
-				} else {
-					x = middle - layer + bottomsteps*2 + shift;
-					y = middle - layer;
-					storeguesses(x,y);
-				}
-
-			}
-			for (int leftsteps = 1; leftsteps < layer; leftsteps++) {
-				x = middle - layer + shift;
-				y = middle - layer + leftsteps*2;
-				storeguesses(x,y);
-			}
-			for (int rightsteps = 1; rightsteps < layer; rightsteps++) {
-				x = middle + layer + shift;
-				y = middle - layer + rightsteps*2;
-				storeguesses(x,y);
-			}
-		}
-		
-	}
+	private Point tempPoint;
 	
 	public void initialise() {
-		for (int i = 0; i < board.length; i++) {
-			Arrays.fill(board[i], false);
-		}
-		counter = 0;
-		guessx = new int[boardSize*boardSize];
-		guessy = new int[boardSize*boardSize];
-		makerandomguesses(0);
-		makerandomguesses(1);
-		counter = 0;
-	}
-	
-	
-
-	@Override
-	public String firstTarget() {
-		counter++;
-		board[guessx[0]][guessy[0]] = true;
-		System.out.format("answer=%s %n", converter(guessx[0],guessy[0]));
-		peter++;
-		return converter(guessx[0],guessy[0]);
+		generator.addMagicElement();
+		generator.generateOptimalGuess(0);
+		generator.generateOptimalGuess(1);
+		guesses = generator.getGuesses();
 	}
 
 	@Override
-	public String nextTarget(String input) {
-		String answer = null;
-		if (input.toLowerCase().contains("sunk")){
-			if (!hits.isEmpty()){
-				hits.remove(0);
-				hits.remove(0);	
-//				hits.clear();
+	public String getTarget(Status input) {
+		String answer;
+		switch (input) {
+		case SUNK:
+			hits.clear();
+			answer = getTarget(Status.MISS);
+			break;
+		case HIT:
+			if (tempPoint == null) {
+				hits.add(guesses.get(0));
+			} else {
+				hits.add(tempPoint);
 			}
-			answer = nextTarget("miss");
-		}
-		else if (input.toLowerCase().contains("hit")) {
-/*			if (tempcheck) {
-				hits.add(tempx);
-				hits.add(tempy);
-				tempcheck = false;
-			} else{*/
-			hits.add(guessx[counter - 1]);
-			hits.add(guessy[counter - 1]);
-//			}
 			answer = guessingsmart();
-		} 
-		else if (!(hits.isEmpty())) {
-			answer = guessingsmart();
-		} 
-		else if (board[guessx[counter]][guessy[counter]]) {
-			counter++;
-			answer = nextTarget(input);
+			break;
+		case MISS:
+			answer = handlingMissCase();
+			break;
+		default:
+			answer = "OOPS! BAD CODE ON MY PART! (But, please blame Csabi!)";
+			break;
 		}
-		else {
-			answer = converter(guessx[counter],guessy[counter]);
-			board[guessx[counter]][guessy[counter]] = true;
+		return answer;
+	}
+
+	private String handlingMissCase() {
+		String answer;
+		if (!(hits.isEmpty())){
+			answer = guessingsmart();			
+		} else {
+			answer = converter(guesses.get(1));
+			guesses.remove(0);
 			peter++;
-			counter++;
 		}
-/*		if (!input.toLowerCase().contains("hit")) {
-			tempcheck = false;
-		}*/
 		return answer;
 	}
 
 	private String guessingsmart() {
-		int x = hits.get(0);
-		int y = hits.get(1);
-		String answer = null;
-		if (!checkIfAlreadyHit(x+1, y)){
-			answer = converter(x+1, y);
-			board[x+1][y] = true;
-			//tempx = x+1;
-			//tempy = y;
-			//tempcheck = true;
-			peter++;
-		} else if (!checkIfAlreadyHit(x-1, y)){
-			answer = converter(x-1, y);
-			board[x-1][y] = true;
-			//tempx = x-1;
-			//tempy = y;
-			//tempcheck = true;
-			peter++;
-		} else if (!checkIfAlreadyHit(x, y+1)){
-			answer = converter(x, y+1);
-			board[x][y+1] = true;
-			//tempx = x;
-			//tempy = y+1;
-			//tempcheck = true;
-			peter++;
-		} else if (!checkIfAlreadyHit(x, y-1)){
-			answer = converter(x, y-1);
-			board[x][y-1] = true;
-			//tempx = x;
-			//tempy = y-1;
-			//tempcheck = true;
+		Point point = hits.get(0);
+		String answer;
+		tempPoint = shiftPoint(point, Direction.UP);
+		if (guesses.remove((tempPoint))){
+			answer = converter(tempPoint);
 			peter++;
 		} else {
-			hits.remove(0);
-			hits.remove(0);
-			if (!(hits.isEmpty())){
-			guessingsmart();
+			tempPoint = shiftPoint(point, Direction.DOWN);
+			if (guesses.remove((tempPoint))){
+				answer = converter(tempPoint);
+				peter++;
 			} else {
-				answer = nextTarget("miss");
+				tempPoint = shiftPoint(point, Direction.LEFT);
+				if (guesses.remove((tempPoint))){
+					answer = converter(tempPoint);
+					peter++;
+				} else {
+					tempPoint = shiftPoint(point, Direction.RIGHT);
+					if (guesses.remove((tempPoint))){
+						answer = converter(tempPoint);
+						peter++;
+					} else {
+						tempPoint = null;
+						hits.remove(0);
+						if(hits.isEmpty()){
+							answer = getTarget(Status.MISS);
+						}
+						else {
+							answer = guessingsmart();
+						}
+					}
+				}
+				
 			}
 		}
 		return answer;
 	}
-
-	private boolean checkIfAlreadyHit(int x, int y) {
-			return checkguesses(x, y) ? board[x][y] : true;		
+	
+	private Point shiftPoint (Point point, Direction direction){
+		Point newPoint;
+		switch (direction) {
+		case UP:
+			newPoint = new Point(point.getX(), point.getY()+1);
+			break;
+		case DOWN:
+			newPoint = new Point(point.getX(), point.getY()-1);
+			break;
+		case LEFT:
+			newPoint = new Point(point.getX()-1, point.getY());
+			break;
+		case RIGHT:
+			newPoint = new Point(point.getX()+1, point.getY());
+			break;
+		default:
+			newPoint = point;
+		}
+		return newPoint;
+	}
+	
+	private String converter(Point point) {
+		return "fire " + String.valueOf(point.getX()) + " " +String.valueOf(point.getY());
 	}
 	
 	@Override
 	public int getPeter() {
 		return peter;
+	}
+
+	public void setGenerator(XYGuessGenerator generator) {
+		this.generator = generator;
 	}
 		
 }

@@ -8,9 +8,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import com.clean.communication.message.MessageHandler;
-import com.clean.interfaces.GameStrategy;
 import com.clean.shipgame.GameWithShips;
 import com.clean.strategy.FirePositionStrategy;
+import com.clean.strategy.XYGuessGenerator;
 
 public class TorpedoServer {
 
@@ -36,7 +36,9 @@ public class TorpedoServer {
                     break;
                 }
             }
-            GameStrategy gameStrategy = new FirePositionStrategy(Integer.parseInt(inputLine.split(" ")[1]));
+            XYGuessGenerator generator = new XYGuessGenerator(Integer.parseInt(inputLine.split(" ")[1]));
+            FirePositionStrategy gameStrategy = new FirePositionStrategy();
+            gameStrategy.setGenerator(generator);
             gameStrategy.initialise();
             TorpedoProtocol torpedoProtocol = new TorpedoProtocol(gameWithShips);
             messageHandler = new MessageHandler(out, in, gameStrategy, torpedoProtocol);

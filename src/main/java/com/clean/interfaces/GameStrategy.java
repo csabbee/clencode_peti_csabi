@@ -1,9 +1,10 @@
 package com.clean.interfaces;
 
+import com.clean.shipgame.Status;
+
 public interface GameStrategy {
 
-    public String firstTarget();
-    public String nextTarget(String input);
+    public String getTarget(Status input);
     public void initialise();
     public int getPeter();
 }
