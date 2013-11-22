@@ -42,17 +42,21 @@ public class MessageHandler {
             }
             if(isValidProtocolMessage(inputLine)) {
                 outputLine = torpedoProtocol.processInput(inputLine);
+                System.out.format("outputLine:%s %n", outputLine);
+                System.out.format("inputLine:%s %n", inputLine);
                 if(inputLine.toLowerCase().contains("fire")){
                     out.println(outputLine);
-                } else if(outputLine.equals("win")){
+                } 
+                if(outputLine.equals("win")){
                     out.println(outputLine);
                     System.out.format("Defeat!%n");
                     break;
-                } else if(isResponsToFire(inputLine)){
-                    Status inputStatus = convert(inputLine);
-                    out.println(gameStrategy.getTarget(inputStatus));
                 }
-
+                if(isResponsToFire(inputLine)){
+                    Status inputStatus = convert(inputLine);
+                    String nextMove = gameStrategy.getTarget(inputStatus);
+                    out.println(nextMove);
+                }
             }
         }
     }

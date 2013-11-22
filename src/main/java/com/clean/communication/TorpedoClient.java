@@ -24,16 +24,15 @@ public class TorpedoClient {
     }
 
     public void initClient(GameWithShips gameWithShips, GameStrategy gameStrategy, String boardSize){
-    		gameWithShips.initialise();
-        	TorpedoProtocol torpedoProtocol = new TorpedoProtocol(gameWithShips);
     	try (
             Socket clientSocket = new Socket(hostName, portNumber);
             PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
           ) {
-        	
             out.println("greeting "+boardSize);
             out.println(gameStrategy.getTarget(Status.MISS));
+            gameWithShips.initialise();
+            TorpedoProtocol torpedoProtocol = new TorpedoProtocol(gameWithShips);
             messageHandler = new MessageHandler(out, in, gameStrategy, torpedoProtocol);
             messageHandler.run();
         } catch (UnknownHostException e) {

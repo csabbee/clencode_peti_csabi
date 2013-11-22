@@ -12,12 +12,14 @@ public class FirePositionStrategy implements GameStrategy {
 	private List<Point> guesses;
 	private XYGuessGenerator generator;
 	private List<Point> hits = new ArrayList<>();
+	private List<Point> guessesFirstHalf = new ArrayList<>();
 	private int peter = 0;
 	private Point tempPoint;
 	
 	public void initialise() {
 		generator.addMagicElement();
 		generator.generateOptimalGuess(0);
+		guessesFirstHalf = generator.getGuesses();
 		generator.generateOptimalGuess(1);
 		guesses = generator.getGuesses();
 	}
@@ -27,6 +29,11 @@ public class FirePositionStrategy implements GameStrategy {
 		String answer;
 		switch (input) {
 		case SUNK:
+			for (Point point : hits) {
+				if (!(guessesFirstHalf.contains(point))){
+					hits.remove(point);
+				}
+			}
 			hits.clear();
 			answer = getTarget(Status.MISS);
 			break;
@@ -45,6 +52,7 @@ public class FirePositionStrategy implements GameStrategy {
 			answer = "OOPS! BAD CODE ON MY PART! (But, please blame Csabi!)";
 			break;
 		}
+		tempPoint = null;
 		return answer;
 	}
 
@@ -83,7 +91,6 @@ public class FirePositionStrategy implements GameStrategy {
 						answer = converter(tempPoint);
 						peter++;
 					} else {
-						tempPoint = null;
 						hits.remove(0);
 						if(hits.isEmpty()){
 							answer = getTarget(Status.MISS);
