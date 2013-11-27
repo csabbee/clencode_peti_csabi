@@ -16,6 +16,7 @@ public class MessageHandler {
     private GameStrategy gameStrategy;
     private TorpedoProtocol torpedoProtocol;
     private boolean firstShot = true;
+    private  String target;
     
     public MessageHandler(PrintWriter out, BufferedReader in, GameStrategy gameStrategy, TorpedoProtocol torpedoProtocol) {
         super();
@@ -34,13 +35,20 @@ public class MessageHandler {
                 System.out.format("inLine=%s %n", inLine);
                 if(inLine.contains("fire")){
                     outLine = torpedoProtocol.processInput(inLine);
-                    if(firstShot){
-                        out.println(gameStrategy.firstTarget());
-                        firstShot = !firstShot;
-                    }
-                } else if(isResponseToFire(inLine)){
-                    outLine = gameStrategy.getTarget(convertStringToStatus(inLine));
                     out.println(outLine);
+                    if(outLine.equals("win")){
+                        System.out.format("Defeat! Blame Peti%n");
+                        out.println(outLine);
+                        break;
+                    }
+                    out.println(target);
+                } 
+                if(isResponseToFire(inLine)){
+                    if("win".equalsIgnoreCase(inLine)){
+                        System.out.format("We won!%n");
+                        break;
+                    }
+                    target = gameStrategy.getTarget(convertStringToStatus(inLine));
                 }
             }
         } catch (IOException e) {
@@ -77,6 +85,11 @@ public class MessageHandler {
 
     public void setFirstShot(boolean firstShot) {
         this.firstShot = firstShot;
+    }
+
+
+    public void setTarget(String target) {
+        this.target = target;
     }
     
     

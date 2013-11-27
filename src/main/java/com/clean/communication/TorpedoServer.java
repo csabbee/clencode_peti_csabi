@@ -9,6 +9,7 @@ import java.net.Socket;
 
 import com.clean.communication.message.MessageHandler;
 import com.clean.shipgame.GameWithShips;
+import com.clean.shipgame.Status;
 import com.clean.strategy.FirePositionStrategy;
 import com.clean.strategy.XYGuessGenerator;
 
@@ -29,12 +30,14 @@ public class TorpedoServer {
                 ) {
             String inputLine;
             inputLine = waitForGreeting(gameWithShips, in);
+            
             XYGuessGenerator generator = new XYGuessGenerator(Integer.parseInt(inputLine.split(" ")[1]));
             FirePositionStrategy gameStrategy = new FirePositionStrategy();
             gameStrategy.setGenerator(generator);
             gameStrategy.initialise();
             TorpedoProtocol torpedoProtocol = new TorpedoProtocol(gameWithShips);
             messageHandler = new MessageHandler(out, in, gameStrategy, torpedoProtocol);
+            messageHandler.setTarget(gameStrategy.getTarget(Status.MISS));
             messageHandler.startProcessingMessages();
         } catch (IOException e) {
             e.printStackTrace();
@@ -44,12 +47,12 @@ public class TorpedoServer {
     private String waitForGreeting(GameWithShips gameWithShips, BufferedReader in) throws IOException {
         String inputLine;
         boolean greetingHappened = false;
-        while(((inputLine = in.readLine()) != null) && !greetingHappened){
+        while(((inputLine = in.readLine()) != null)){
             if(inputLine.contains("greeting")){
                 System.out.format("Greeeting happened%n");
                 gameWithShips.setBoardSize(Integer.parseInt(inputLine.split(" ")[1]));
                 gameWithShips.initialise();
-                greetingHappened = true;
+                break;
             }
         }
         return inputLine;
