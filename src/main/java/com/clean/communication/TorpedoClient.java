@@ -10,7 +10,6 @@ import java.net.UnknownHostException;
 import com.clean.communication.message.MessageHandler;
 import com.clean.interfaces.GameStrategy;
 import com.clean.shipgame.GameWithShips;
-import com.clean.shipgame.Status;
 
 public class TorpedoClient {
 
@@ -30,17 +29,19 @@ public class TorpedoClient {
             BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
           ) {
             out.println("greeting "+boardSize);
-            out.println(gameStrategy.getTarget(Status.MISS));
+            String first = gameStrategy.firstTarget();
+            System.out.format("first=%s %n", first);
+            out.println(first);
             gameWithShips.initialise();
             TorpedoProtocol torpedoProtocol = new TorpedoProtocol(gameWithShips);
             messageHandler = new MessageHandler(out, in, gameStrategy, torpedoProtocol);
-            messageHandler.run();
+            messageHandler.setFirstShot(false);
+            messageHandler.startProcessingMessages();
         } catch (UnknownHostException e) {
             System.err.println("Don't know about host " + hostName);
             System.exit(1);
         } catch (IOException e) {
-            System.err.println("Couldn't get I/O for the connection to " +
-                hostName);
+            System.err.println("Couldn't get I/O for the connection to " + hostName);
             System.exit(1);
         }
     

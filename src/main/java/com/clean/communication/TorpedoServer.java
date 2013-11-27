@@ -28,23 +28,30 @@ public class TorpedoServer {
                 BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 ) {
             String inputLine;
-            while((inputLine = in.readLine()) != null){
-                if(inputLine.contains("greeting")){
-                    System.out.format("Greeeting happened%n");
-                    gameWithShips.setBoardSize(Integer.parseInt(inputLine.split(" ")[1]));
-                    gameWithShips.initialise();
-                    break;
-                }
-            }
+            inputLine = waitForGreeting(gameWithShips, in);
             XYGuessGenerator generator = new XYGuessGenerator(Integer.parseInt(inputLine.split(" ")[1]));
             FirePositionStrategy gameStrategy = new FirePositionStrategy();
             gameStrategy.setGenerator(generator);
             gameStrategy.initialise();
             TorpedoProtocol torpedoProtocol = new TorpedoProtocol(gameWithShips);
             messageHandler = new MessageHandler(out, in, gameStrategy, torpedoProtocol);
-            messageHandler.run();
+            messageHandler.startProcessingMessages();
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private String waitForGreeting(GameWithShips gameWithShips, BufferedReader in) throws IOException {
+        String inputLine;
+        boolean greetingHappened = false;
+        while(((inputLine = in.readLine()) != null) && !greetingHappened){
+            if(inputLine.contains("greeting")){
+                System.out.format("Greeeting happened%n");
+                gameWithShips.setBoardSize(Integer.parseInt(inputLine.split(" ")[1]));
+                gameWithShips.initialise();
+                greetingHappened = true;
+            }
+        }
+        return inputLine;
     }
 }

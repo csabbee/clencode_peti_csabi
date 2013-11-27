@@ -23,7 +23,7 @@ public class GameWithShips implements Torpedo {
             status = Status.HIT;
             loseCondition++;
             System.out.format("LoseCondition=%s %n", loseCondition);
-            printer.printBoard();
+            //printer.printBoard();
             if(checkIfSunken()){
                 status = Status.SUNK;
                 System.out.format("SUNK!%n");

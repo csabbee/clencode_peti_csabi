@@ -139,5 +139,10 @@ public class FirePositionStrategy implements GameStrategy {
 	public void setGenerator(XYGuessGenerator generator) {
 		this.generator = generator;
 	}
+
+    @Override
+    public String firstTarget() {
+        return getTarget(Status.MISS);
+    }
 		
 }
